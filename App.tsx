@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Settings, RotateCw, Shuffle, SortAsc, Volume2, VolumeX, 
@@ -13,6 +12,7 @@ import WinnerModal from './components/WinnerModal';
 import { WheelEntry, AppSettings, HistoryEntry, SavedWheel } from './types';
 import { audioManager } from './utils/audio';
 import { t, LANGUAGES } from './utils/translations';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 // Vibrant colors
 const COLORS = [
@@ -564,7 +564,7 @@ const App: React.FC = () => {
   const currentLang = settings.language;
 
   return (
-    <div className="min-h-screen relative flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-900 transition-colors duration-500">
+    <div className="h-screen flex flex-col bg-slate-100 dark:bg-slate-900 transition-colors duration-500 overflow-hidden">
       
       {/* Custom Animation Styles for Spinning State */}
       <style>{`
@@ -592,14 +592,30 @@ const App: React.FC = () => {
       </div>
 
       {/* Header */}
-      <header className="glass-panel z-40 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0">
+      <header className="glass-panel z-40 px-4 py-2 flex items-center justify-between shadow-sm sticky top-0 h-16">
         <div className="flex items-center gap-3">
-           <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20 animate-pulse-slow">
-             <RotateCw size={24} className={isSpinning ? 'animate-spin' : ''}/>
+           <div className="w-10 h-10 flex items-center justify-center">
+             <DotLottieReact
+               src="https://lottie.host/fa5ebd64-ca68-4e4b-a18e-e82ec29fe466/QtGkI2xGgf.lottie"
+               loop
+               autoplay
+               style={{ width: '100%', height: '100%' }}
+             />
            </div>
-           <h1 className="text-2xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-500 tracking-wide">
+           <h1 className="text-2xl font-display font-bold bg-clip-text text-transparent tracking-wide animate-gradient bg-300% bg-gradient-to-r from-indigo-500 via-pink-500 to-purple-500">
              SpinMaster
            </h1>
+           <style jsx global>{`
+             @keyframes gradient {
+               0% { background-position: 0% 50%; }
+               50% { background-position: 100% 50%; }
+               100% { background-position: 0% 50%; }
+             }
+             .animate-gradient {
+               animation: gradient 3s ease infinite;
+               background-size: 200% 200%;
+             }
+           `}</style>
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
@@ -633,11 +649,11 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Layout */}
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10 min-h-0 h-[calc(100vh-4rem)]">
         
         {/* Left: Wheel Area */}
-        <section className="flex-1 flex flex-col items-center justify-center p-4 lg:p-8 overflow-y-auto min-h-[50vh]">
-           <div className={`relative z-10 mb-10 transition-transform duration-500 ${isSpinning ? 'spin-active' : 'hover:scale-[1.02]'}`}>
+        <section className="flex-1 flex flex-col items-center justify-center p-4 lg:p-8 overflow-hidden max-h-[calc(100vh-4rem)]">
+           <div className={`relative z-10 transition-transform duration-500 ${isSpinning ? 'spin-active' : 'hover:scale-[1.02]'}`} style={{ maxHeight: 'calc(80vh - 4rem)' }}>
               <Wheel 
                 entries={entries}
                 isSpinning={isSpinning}
@@ -663,7 +679,7 @@ const App: React.FC = () => {
            <button
                 onClick={handleSpin}
                 disabled={isSpinning || entries.length < 2}
-                className="group relative w-full max-w-xs md:max-w-none md:w-auto px-8 py-6 md:px-16 md:py-6 rounded-full overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative w-full max-w-xs md:max-w-none md:w-auto px-8 py-4 md:px-16 md:py-4 rounded-full overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                 title="Press Space to spin"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 animate-[spin_4s_linear_infinite]" />
@@ -682,6 +698,7 @@ const App: React.FC = () => {
             flex flex-col w-full lg:w-[450px] 
             glass-panel border-l-0 lg:border-l shadow-2xl
             transition-transform duration-500 z-30
+            h-full overflow-y-auto
             ${showMobileMenu ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
         `}>
             
@@ -694,19 +711,39 @@ const App: React.FC = () => {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-2 p-4 overflow-x-auto border-b border-slate-200 dark:border-slate-700/50 scrollbar-hide">
-               <TabButton id="editor" icon={<Edit3 size={18} />} label={t('edit', currentLang)} />
-               <TabButton id="saved" icon={<FolderOpen size={18} />} label={t('saved', currentLang)} />
-               <TabButton id="history" icon={<History size={18} />} label={t('history', currentLang)} />
-               <TabButton id="settings" icon={<Settings size={18} />} label={t('settings', currentLang)} />
+            <div className="w-full border-b border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="w-full overflow-x-auto px-2 py-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
+                <div className="flex space-x-2 py-1 w-max min-w-full">
+                  <TabButton id="editor" icon={<Edit3 size={18} />} label={t('edit', currentLang)} />
+                  <TabButton id="saved" icon={<FolderOpen size={18} />} label={t('saved', currentLang)} />
+                  <TabButton id="history" icon={<History size={18} />} label={t('history', currentLang)} />
+                  <TabButton id="settings" icon={<Settings size={18} />} label={t('settings', currentLang)} />
+                </div>
+              </div>
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1 overflow-hidden relative bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex-1 overflow-hidden relative bg-slate-50/50 dark:bg-slate-900/50 h-[calc(100vh-12rem)] lg:h-[calc(100vh-4rem)]">
+              <style jsx global>{`
+                /* Custom scrollbar for the tab navigation */
+                .scrollbar-thin::-webkit-scrollbar {
+                  height: 6px;
+                }
+                .scrollbar-thin::-webkit-scrollbar-track {
+                  background: transparent;
+                }
+                .scrollbar-thin::-webkit-scrollbar-thumb {
+                  background-color: #cbd5e1;
+                  border-radius: 3px;
+                }
+                .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+                  background-color: #4b5563;
+                }
+              `}</style>
                
                {/* 1. EDITOR TAB */}
                {activeTab === 'editor' && (
-                 <div className="flex flex-col h-full p-4 animate-in slide-in-from-right-4 duration-300">
+                 <div className="flex flex-col h-full p-4 animate-in slide-in-from-right-4 duration-300 overflow-y-auto" style={{ maxHeight: '100%' }}>
                     
                     {/* Toolbar */}
                     <div className="flex justify-between items-center mb-4">
@@ -875,7 +912,7 @@ const App: React.FC = () => {
 
                {/* 3. HISTORY TAB */}
                {activeTab === 'history' && (
-                 <div className="p-4 h-full overflow-y-auto animate-in slide-in-from-right-4 duration-300">
+                 <div className="p-4 h-full overflow-y-auto animate-in slide-in-from-right-4 duration-300" style={{ maxHeight: '100%' }}>
                      {history.length === 0 ? (
                         <p className="text-center text-slate-400 mt-10">{t('spinHistory', currentLang)}</p>
                      ) : (
@@ -904,7 +941,7 @@ const App: React.FC = () => {
 
                {/* 4. SETTINGS TAB */}
                {activeTab === 'settings' && (
-                 <div className="p-6 h-full overflow-y-auto animate-in slide-in-from-right-4 duration-300">
+                 <div className="p-6 h-full overflow-y-auto animate-in slide-in-from-right-4 duration-300" style={{ maxHeight: '100%' }}>
                      
                      {/* General / Language */}
                      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">{t('general', currentLang)}</h3>
@@ -1417,17 +1454,34 @@ const App: React.FC = () => {
         <div className="px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
              <div className="flex items-center gap-2">
                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-pink-500 font-bold">SpinMaster Pro</span>
-                 <span className="opacity-50">© {new Date().getFullYear()}</span>
+                 <span className="opacity-50"> 2023</span>
              </div>
              
-             <div className="flex items-center gap-4 opacity-80">
-                 <a href="#" className="hover:text-indigo-500 transition-colors" onClick={e => e.preventDefault()}>Privacy</a>
-                 <a href="#" className="hover:text-indigo-500 transition-colors" onClick={e => e.preventDefault()}>Terms</a>
-                 <span className="hidden sm:inline w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></span>
-                 <div className="flex items-center gap-1.5">
-                     <span>Crafted with</span>
-                     <Heart size={12} className="text-pink-500 fill-pink-500" />
-                 </div>
+             <div className="flex items-center gap-2">
+                 <span>Powered by</span>
+                 <a 
+                     href="https://the-dev-abir-code-crafted-v2nt.vercel.app/" 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     className="flex items-center gap-1 font-['Rock_Salt'] text-sm hover:scale-105 transition-transform duration-300"
+                 >
+                     <span className="animate-gradient-text bg-gradient-to-r from-indigo-400 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+                         TheDevAbir|CodeCrafted
+                     </span>
+                 </a>
+                 <style jsx global>{`
+                     @keyframes gradient {
+                         0% { background-position: 0% 50%; }
+                         50% { background-position: 100% 50%; }
+                         100% { background-position: 0% 50%; }
+                     }
+                     .animate-gradient-text {
+                         background-size: 200% auto;
+                         animation: gradient 3s ease infinite;
+                         -webkit-background-clip: text;
+                         -webkit-text-fill-color: transparent;
+                     }
+                 `}</style>
              </div>
         </div>
       </footer>
