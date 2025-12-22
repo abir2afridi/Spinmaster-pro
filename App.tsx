@@ -1460,7 +1460,7 @@ const App: React.FC = () => {
              <div className="flex items-center gap-2">
                  <span>Powered by</span>
                  <a 
-                     href="https://the-dev-abir-code-crafted-v2nt.vercel.app/" 
+                     href="https://abir2afridi.vercel.app/" 
                      target="_blank" 
                      rel="noopener noreferrer"
                      className="flex items-center gap-1 font-['Rock_Salt'] text-sm hover:scale-105 transition-transform duration-300"
