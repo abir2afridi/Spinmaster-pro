@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { arc as d3Arc, rgb as d3Rgb } from 'd3';
 import { Play, Star, Heart, Crown, Zap, Smile } from 'lucide-react';
 import { WheelEntry } from '../types';
@@ -23,6 +23,7 @@ interface WheelProps {
   centerHubText: string;
   pointerStyle: string;
   pointerColor: string;
+  winner: WheelEntry | null;
 }
 
 const EASING = (t: number) => 1 - Math.pow(1 - t, 4); // Quartic ease-out
@@ -44,7 +45,8 @@ const Wheel: React.FC<WheelProps> = ({
   centerHubShape,
   centerHubText,
   pointerStyle = 'classic',
-  pointerColor = '#f43f5e'
+  pointerColor = '#f43f5e',
+  winner
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<SVGSVGElement>(null);
@@ -57,7 +59,16 @@ const Wheel: React.FC<WheelProps> = ({
   const startTimeRef = useRef<number>(0);
   const lastTickRef = useRef<number>(0);
 
-  const [size, setSize] = useState({ width: 500, height: 500 });
+  const [size, setSize] = useState(() => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const isMobile = vw < 1024;
+    const padding = isMobile ? 32 : 64;
+    const maxWheelHeight = 0.8 * vh - 64;
+    const maxDimension = Math.min(vw - padding, maxWheelHeight, 500);
+    const s = Math.max(200, maxDimension);
+    return { width: s, height: s };
+  });
   const [winningIndex, setWinningIndex] = useState<number | null>(null);
   
   const activeEntries = useMemo(() => entries.filter(e => e.enabled), [entries]);
@@ -68,17 +79,27 @@ const Wheel: React.FC<WheelProps> = ({
     setWinningIndex(null);
   }, [activeEntries]);
 
-  // 1. Resize Observer
+  // Reset winning index when winner modal closes (winner becomes null)
+  // This ensures wheel state is clean for next spin
   useEffect(() => {
+    if (!winner) {
+      setWinningIndex(null);
+    }
+  }, [winner]);
+
+  // 1. Resize Observer - update wheel size on window resize
+  useLayoutEffect(() => {
     const handleResize = () => {
-      if (containerRef.current) {
-        const { offsetWidth } = containerRef.current;
-        const newSize = Math.min(offsetWidth, 600);
-        setSize({ width: newSize, height: newSize });
-      }
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const isMobile = vw < 1024;
+      const padding = isMobile ? 32 : 64;
+      const maxWheelHeight = 0.8 * vh - 64;
+      const maxDimension = Math.min(vw - padding, maxWheelHeight, 500);
+      const s = Math.max(200, maxDimension);
+      setSize({ width: s, height: s });
     };
     window.addEventListener('resize', handleResize);
-    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 

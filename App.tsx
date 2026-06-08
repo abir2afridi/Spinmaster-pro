@@ -5,9 +5,11 @@ import {
   Undo, Redo, Share2, LayoutGrid, List, Plus, X, AlignLeft,
   Edit3, Check, Palette, Image as ImageIcon, Upload, Disc,
   Layers, Circle, Music, Speaker, Play, Star, Heart, Crown, 
-  Zap, Square, Smile, Hexagon, Navigation, Globe
+  Zap, Square, Smile, Hexagon, Navigation, Globe, Info, Code2
 } from 'lucide-react';
 import Wheel from './components/Wheel';
+import AboutContent from './components/AboutContent';
+import DeveloperPage from './components/DeveloperPage';
 import WinnerModal from './components/WinnerModal';
 import { WheelEntry, AppSettings, HistoryEntry, SavedWheel } from './types';
 import { audioManager } from './utils/audio';
@@ -239,7 +241,7 @@ const ColorPickerPopover: React.FC<{
 
 const App: React.FC = () => {
   // --- State ---
-  const [activeTab, setActiveTab] = useState<'editor' | 'history' | 'settings' | 'saved'>('editor');
+  const [activeTab, setActiveTab] = useState<'editor' | 'history' | 'settings' | 'saved' | 'about' | 'developer'>('editor');
   const [editorMode, setEditorMode] = useState<'bulk' | 'list'>('list'); // Default to list for "Pro" feel
   
   // Core Data
@@ -248,6 +250,7 @@ const App: React.FC = () => {
   
   // Gameplay State
   const [isSpinning, setIsSpinning] = useState(false);
+  const isSpinningRef = useRef(false);
   const [spinTrigger, setSpinTrigger] = useState(0);
   const [winner, setWinner] = useState<WheelEntry | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -310,6 +313,11 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Sync isSpinningRef with isSpinning to avoid stale closures
+  useEffect(() => {
+    isSpinningRef.current = isSpinning;
+  }, [isSpinning]);
+
   // Keyboard Shortcuts (Space to Spin)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -320,7 +328,7 @@ const App: React.FC = () => {
 
         if (!isTyping) {
           e.preventDefault(); // Prevent page scroll
-          if (!isSpinning && entries.length >= 2) {
+          if (!isSpinningRef.current && entries.length >= 2) {
             setSpinTrigger(prev => prev + 1);
           }
         }
@@ -329,7 +337,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSpinning, entries.length]);
+  }, [entries.length]);
 
   // --- Logic ---
 
@@ -427,7 +435,7 @@ const App: React.FC = () => {
   };
 
   const handleSpin = () => {
-    if (isSpinning || entries.length < 2) return;
+    if (isSpinningRef.current || entries.length < 2) return;
     setSpinTrigger(prev => prev + 1);
   };
 
@@ -602,9 +610,11 @@ const App: React.FC = () => {
                style={{ width: '100%', height: '100%' }}
              />
            </div>
-           <h1 className="text-2xl font-display font-bold bg-clip-text text-transparent tracking-wide animate-gradient bg-300% bg-gradient-to-r from-indigo-500 via-pink-500 to-purple-500">
-             SpinMaster
-           </h1>
+            <button onClick={() => setActiveTab('editor')}>
+              <h1 className="text-2xl font-display font-bold bg-clip-text text-transparent tracking-wide animate-gradient bg-300% bg-gradient-to-r from-indigo-500 via-pink-500 to-purple-500 hover:scale-105 transition-transform cursor-pointer">
+                SpinMaster
+              </h1>
+            </button>
            <style jsx global>{`
              @keyframes gradient {
                0% { background-position: 0% 50%; }
@@ -616,9 +626,57 @@ const App: React.FC = () => {
                background-size: 200% 200%;
              }
            `}</style>
+          <button
+            onClick={() => {
+              setActiveTab('about');
+              setShowMobileMenu(true);
+            }}
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === 'about'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+            }`}
+          >
+            <Info size={16} />
+            {t('about', currentLang)}
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('developer');
+              setShowMobileMenu(true);
+            }}
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === 'developer'
+                ? 'bg-[#0066FF] text-white shadow-lg shadow-[#0066FF]/30'
+                : 'text-slate-500 hover:text-[#0066FF] dark:text-slate-400 dark:hover:text-[#0066FF] hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+            }`}
+          >
+            <Code2 size={16} />
+            Developer
+          </button>
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+            <button
+              onClick={() => {
+                setActiveTab('about');
+                setShowMobileMenu(true);
+              }}
+              className="md:hidden p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-lg transition-all"
+              title={t('about', currentLang)}
+            >
+              <Info size={20} />
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('developer');
+                setShowMobileMenu(true);
+              }}
+              className="md:hidden p-2 text-slate-500 dark:text-slate-400 hover:text-[#0066FF] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-lg transition-all"
+              title="Developer"
+            >
+              <Code2 size={20} />
+            </button>
            <div className="hidden md:flex gap-2 p-1 bg-slate-200 dark:bg-slate-800 rounded-full">
               <button 
                 onClick={() => setSettings(s => ({ ...s, theme: 'light' }))}
@@ -651,10 +709,14 @@ const App: React.FC = () => {
       {/* Main Layout */}
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden relative z-10 min-h-0 h-[calc(100vh-4rem)]">
         
+        {activeTab === 'developer' ? (
+          <DeveloperPage onClose={() => setActiveTab('editor')} />
+        ) : (
+        <>
         {/* Left: Wheel Area */}
         <section className="flex-1 flex flex-col items-center justify-center p-4 lg:p-8 overflow-hidden max-h-[calc(100vh-4rem)]">
-           <div className={`relative z-10 transition-transform duration-500 ${isSpinning ? 'spin-active' : 'hover:scale-[1.02]'}`} style={{ maxHeight: 'calc(80vh - 4rem)' }}>
-              <Wheel 
+           <div className={`relative z-10 transition-transform duration-500 ${isSpinning ? 'spin-active' : 'lg:hover:scale-[1.02]'}`} style={{ maxHeight: 'calc(80vh - 4rem)' }}>
+               <Wheel 
                 entries={entries}
                 isSpinning={isSpinning}
                 onSpinComplete={handleSpinComplete}
@@ -672,6 +734,7 @@ const App: React.FC = () => {
                 centerHubText={settings.centerHubText}
                 pointerStyle={settings.pointerStyle}
                 pointerColor={settings.pointerColor}
+                winner={winner}
               />
            </div>
            
@@ -681,6 +744,7 @@ const App: React.FC = () => {
                 disabled={isSpinning || entries.length < 2}
                 className="group relative w-full max-w-xs md:max-w-none md:w-auto px-8 py-4 md:px-16 md:py-4 rounded-full overflow-hidden shadow-[0_0_20px_rgba(99,102,241,0.5)] transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
                 title="Press Space to spin"
+                style={{ touchAction: 'manipulation' }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 animate-[spin_4s_linear_infinite]" />
                 <div className="absolute inset-[2px] bg-slate-900 rounded-full" />
@@ -718,6 +782,7 @@ const App: React.FC = () => {
                   <TabButton id="saved" icon={<FolderOpen size={18} />} label={t('saved', currentLang)} />
                   <TabButton id="history" icon={<History size={18} />} label={t('history', currentLang)} />
                   <TabButton id="settings" icon={<Settings size={18} />} label={t('settings', currentLang)} />
+                  <TabButton id="about" icon={<Info size={18} />} label={t('about', currentLang)} />
                 </div>
               </div>
             </div>
@@ -1442,12 +1507,20 @@ const App: React.FC = () => {
                          </div>
                      </div>
                  </div>
-               )}
-               
-            </div>
-        </aside>
+                )}
 
-      </main>
+                {/* 5. ABOUT TAB */}
+                {activeTab === 'about' && (
+                  <div className="h-full overflow-y-auto animate-in slide-in-from-right-4 duration-300" style={{ maxHeight: '100%' }}>
+                    <AboutContent language={currentLang} />
+                  </div>
+                )}
+                
+             </div>
+          </aside>
+          </>
+       )}
+       </main>
 
       {/* Footer */}
       <footer className="glass-panel z-40 border-t border-slate-200/50 dark:border-slate-700/50 relative shrink-0">
@@ -1501,7 +1574,10 @@ const App: React.FC = () => {
 
       <WinnerModal 
         winner={winner} 
-        onClose={() => setWinner(null)}
+        onClose={() => {
+          setWinner(null);
+          setIsSpinning(false);
+        }}
         onRemove={handleRemoveWinner}
         language={settings.language}
       />
